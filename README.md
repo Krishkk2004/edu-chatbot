@@ -10,6 +10,8 @@ This app has:
 
 ## Run
 
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
 
 Full-stack web app for an education chatbot with:
@@ -32,11 +34,46 @@ Full-stack web app for an education chatbot with:
 ## Run
 
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 ```bash
 python3 server.py
 ```
 
 Open: `http://localhost:8000`
+
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+## Backend SQLite structure for study materials
+
+`chatbot.db` contains separate material tables:
+- `notes`
+- `question_papers`
+- `important_questions`
+
+Each table has:
+- `subject`
+- `title`
+- `file_name`
+- `created_at`
+
+Developer/admin should:
+1. Place files inside `static/uploads` (or subfolders).
+2. Insert metadata rows into these SQLite tables.
+
+When users ask for materials, bot asks:
+- `Which subject do you need?`
+
+Then it fetches from the matching SQLite table and returns download links as `/files/<file_name>`.
+
+## Admin helper endpoints
+
+- `GET /api/admin-static-uploads` → exact files available in:
+  - `static/uploads/Notes`
+  - `static/uploads/Question_Paper`
+  - `static/uploads/Important_Question`
+- `GET /api/admin-materials?category=notes|question_papers|important_questions`
+
+## Optional OpenAI
+
 
 
 ## Backend SQLite structure for study materials
@@ -71,10 +108,13 @@ Then it fetches from the matching SQLite table and returns download links as `/f
 
 ## Optional OpenAI
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 ```bash
 export OPENAI_API_KEY="your_key"
 export OPENAI_MODEL="gpt-4o-mini"
 python3 server.py
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 ```
 
 If API key is not set, fallback reply is used.
@@ -91,10 +131,14 @@ If API key is not set, fallback reply is used.
 export OPENAI_API_KEY="your_key"
 export OPENAI_MODEL="gpt-4o-mini"   # optional
 python3 server.py
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 ```
  codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
 
 If API key is missing, EduChat Bot uses fallback responses.
+
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+If API key is not set, fallback reply is used.
 
 ## Admin file placement
 
@@ -130,3 +174,4 @@ If API key is missing, EduChat Bot uses built-in fallback responses.
 - `GET /api/chat-history` (auth)
 - `GET /files/<filename>`
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot

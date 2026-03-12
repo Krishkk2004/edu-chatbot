@@ -14,12 +14,17 @@ from urllib.request import Request, urlopen
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(ROOT, "chatbot.db")
 STATIC_DIR = os.path.join(ROOT, "static")
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
+
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
 LEGACY_UPLOAD_DIR = os.path.join(ROOT, "uploads")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 MATERIAL_PROMPT = "Which subject do you need?"
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
  codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
 UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
@@ -30,20 +35,34 @@ UPLOAD_DIR = os.path.join(ROOT, "uploads")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(LEGACY_UPLOAD_DIR, exist_ok=True)
 
+
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+CATEGORY_TABLES = {
+    "notes": "notes",
+    "question_papers": "question_papers",
+    "questionpaper": "question_papers",
+    "important_questions": "important_questions",
+    "important_question": "important_questions",
 
 
 CATEGORY_TABLES = {
     "notes": "notes",
     "question_papers": "question_papers",
     "important_questions": "important_questions",
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 }
 
 
 KEYWORDS = {
     "notes": ["note", "notes"],
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+    "question_papers": ["question paper", "question papers", "qp", "questionpaper"],
+    "important_questions": ["important question", "important questions", "important question", "important_question"],
+
     "question_papers": ["question paper", "question papers", "qp"],
     "important_questions": ["important question", "important questions", "important"],
 
@@ -61,6 +80,7 @@ ALLOWED_TYPES = {
     "important_questions": {"extensions": {".png", ".jpg", ".jpeg", ".webp"}},
     "question_papers": {"extensions": {".pdf"}},
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 }
 
 
@@ -114,6 +134,8 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         );
 
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
 
         CREATE TABLE IF NOT EXISTS resources (
@@ -128,6 +150,7 @@ def init_db():
         );
 
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
         CREATE TABLE IF NOT EXISTS chat_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -136,6 +159,8 @@ def init_db():
             created_at TEXT NOT NULL,
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         );
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
         """
     )
@@ -145,8 +170,7 @@ def init_db():
         pass
     conn.commit()
     conn.close()
-
-
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 
         CREATE TABLE IF NOT EXISTS chat_state (
             user_id INTEGER PRIMARY KEY,
@@ -155,6 +179,7 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         );
 
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
         CREATE TABLE IF NOT EXISTS notes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             subject TEXT NOT NULL,
@@ -178,10 +203,169 @@ def init_db():
             file_name TEXT NOT NULL,
             created_at TEXT NOT NULL
         );
+
+        -- legacy-compatible names requested by some manual workflows
+        CREATE TABLE IF NOT EXISTS questionpaper (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject TEXT NOT NULL,
+            title TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS important_question (
+
+        CREATE TABLE IF NOT EXISTS chat_state (
+            user_id INTEGER PRIMARY KEY,
+            pending_category TEXT,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS notes (
+ codex/create-frontend-and-backend-for-education-ai-chatbot
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject TEXT NOT NULL,
+            title TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
         """
     )
     conn.commit()
     conn.close()
+
+ codex/create-frontend-and-backend-for-education-ai-chatbot
+
+        CREATE TABLE IF NOT EXISTS question_papers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject TEXT NOT NULL,
+            title TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+def infer_category(text: str):
+    t = text.lower()
+    for category, words in KEYWORDS.items():
+        if any(w in t for w in words):
+            return category
+    if "study material" in t or "material" in t:
+        return "notes"
+    return None
+
+
+def find_file_by_name(filename: str):
+    if not filename:
+        return None
+    for base in [UPLOAD_DIR, LEGACY_UPLOAD_DIR]:
+        direct = os.path.join(base, filename)
+        if os.path.exists(direct):
+            return direct
+        for root, _, files in os.walk(base):
+            if filename in files:
+                return os.path.join(root, filename)
+    return None
+
+
+
+
+def tables_for_category(category: str):
+    canonical = CATEGORY_TABLES[category]
+    if canonical == "question_papers":
+        return ["question_papers", "questionpaper"]
+    if canonical == "important_questions":
+        return ["important_questions", "important_question"]
+    return [canonical]
+
+def list_subjects_for_category(conn, category: str):
+    subjects = []
+    for table in tables_for_category(category):
+        rows = conn.execute(f"SELECT DISTINCT subject FROM {table} ORDER BY subject").fetchall()
+        subjects.extend([r["subject"] for r in rows])
+    return sorted({safe_subject(s) for s in subjects if s})
+
+
+def find_subject_in_text(conn, category: str, text: str):
+    subjects = list_subjects_for_category(conn, category)
+    lowered = text.lower()
+    for sub in subjects:
+        sub_norm = (sub or "").strip().lower()
+        if sub_norm and sub_norm in lowered:
+            return sub_norm
+    return ""
+
+
+def fetch_materials(conn, category: str, subject: str):
+    subject_norm = safe_subject(subject)
+    rows = []
+    for table in tables_for_category(category):
+        found = conn.execute(
+            f"SELECT subject,title,file_name,created_at FROM {table} WHERE lower(subject)=? ORDER BY created_at DESC",
+            (subject_norm,),
+        ).fetchall()
+        rows.extend(found)
+    return sorted(rows, key=lambda r: r["created_at"], reverse=True)
+
+
+def generate_openai_reply(user_message: str, history_rows):
+    if not OPENAI_API_KEY:
+        return None
+
+    messages = [{
+        "role": "system",
+        "content": "You are educhat bot for Anna University. For study materials ask exactly: Which subject do you need?",
+    }]
+    for row in history_rows[-8:]:
+        messages.append({"role": row["role"], "content": row["message"]})
+    messages.append({"role": "user", "content": user_message})
+
+    payload = {"model": OPENAI_MODEL, "messages": messages, "temperature": 0.4}
+    req = Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {OPENAI_API_KEY}"},
+        method="POST",
+    )
+    try:
+        with urlopen(req, timeout=25) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"].strip()
+    except Exception:
+        return None
+
+
+def admin_static_file_list():
+    result = []
+    for folder_name, category in [
+        ("Notes", "notes"),
+        ("Question_Paper", "question_papers"),
+        ("Important_Question", "important_questions"),
+    ]:
+        category_dir = os.path.join(UPLOAD_DIR, folder_name)
+        files = []
+        if os.path.isdir(category_dir):
+            for name in sorted(os.listdir(category_dir)):
+                full = os.path.join(category_dir, name)
+                if os.path.isfile(full):
+                    files.append(name)
+        result.append({"folder": folder_name, "category": category, "files": files})
+    return result
+
+        CREATE TABLE IF NOT EXISTS important_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject TEXT NOT NULL,
+            title TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+        """
+    )
+    conn.commit()
+    conn.close()
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 
 
 def infer_category(text: str):
@@ -427,7 +611,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({"error": "Unauthorized"}, 401)
             return self.send_json({"user": {"id": user["id"], "name": user["name"], "email": user["email"]}})
 
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
+
+ codex/create-frontend-and-backend-for-education-ai-chatbot
         if parsed.path == "/api/admin-static-uploads":
             return self.send_json({"base_path": "static/uploads", "categories": admin_static_file_list()})
 
@@ -476,6 +663,8 @@ class Handler(BaseHTTPRequestHandler):
             conn.close()
             all_items.sort(key=lambda x: x["created_at"], reverse=True)
             return self.send_json({"resources": all_items})
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
  codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
         if parsed.path == "/api/admin-static-uploads":
@@ -509,6 +698,7 @@ class Handler(BaseHTTPRequestHandler):
                 item["download_url"] = f"/files/{os.path.basename(r['file_path'])}"
                 items.append(item)
             return self.send_json({"resources": items})
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 
         if parsed.path == "/api/chat-history":
             user = self.auth_user()
@@ -583,6 +773,8 @@ class Handler(BaseHTTPRequestHandler):
             conn.close()
             return self.send_json({"token": token, "user": {"id": row["id"], "name": row["name"], "email": row["email"]}})
 
+codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
         if parsed.path == "/api/upload-resource":
             user = self.auth_user()
@@ -637,6 +829,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"message": "Resource uploaded"}, 201)
 
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
         if parsed.path == "/api/chat":
             user = self.auth_user()
             if not user:
@@ -647,6 +840,8 @@ class Handler(BaseHTTPRequestHandler):
             if not message:
                 return self.send_json({"error": "Message required"}, 400)
 
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
  codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
             text = message.lower()
@@ -655,13 +850,17 @@ class Handler(BaseHTTPRequestHandler):
 
  codex/create-frontend-and-backend-for-education-ai-chatbot
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
             conn = get_db()
             conn.execute(
                 "INSERT INTO chat_history(user_id,role,message,created_at) VALUES(?,?,?,?)",
                 (user["id"], "user", message, now_iso()),
             )
 
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
+
+ codex/create-frontend-and-backend-for-education-ai-chatbot
             category = infer_category(message)
             pending = conn.execute("SELECT pending_category FROM chat_state WHERE user_id=?", (user["id"],)).fetchone()
 
@@ -697,6 +896,8 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     response = f"No {pending_category.replace('_', ' ')} found for {subject}."
                 conn.execute("DELETE FROM chat_state WHERE user_id=?", (user["id"],))
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
  codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
             previous_assistant = conn.execute(
@@ -758,17 +959,23 @@ class Handler(BaseHTTPRequestHandler):
                     response = f"I couldn't find {requested_category.replace('_', ' ')} for {matched_subject}."
  codex/create-frontend-and-backend-for-education-ai-chatbot
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
             else:
                 history_rows = conn.execute(
                     "SELECT role,message FROM chat_history WHERE user_id=? ORDER BY id ASC",
                     (user["id"],),
                 ).fetchall()
                 ai_reply = generate_openai_reply(message, history_rows)
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
+
+ codex/create-frontend-and-backend-for-education-ai-chatbot
                 response = ai_reply or (
                     "I am educhat bot. Ask me Anna University questions. "
                     "If you need notes, question papers, or important questions, I will ask your subject."
                 )
+
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
                 if ai_reply:
                     response = ai_reply
@@ -784,6 +991,7 @@ class Handler(BaseHTTPRequestHandler):
                     )
 
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
             conn.execute(
                 "INSERT INTO chat_history(user_id,role,message,created_at) VALUES(?,?,?,?)",
                 (user["id"], "assistant", response, now_iso()),
