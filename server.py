@@ -42,22 +42,14 @@ CATEGORY_TABLES = {
     "important_question": "important_questions",
 
 
-CATEGORY_TABLES = {
-    "notes": "notes",
-    "question_papers": "question_papers",
-    "important_questions": "important_questions",
-
 }
 
 
 KEYWORDS = {
     "notes": ["note", "notes"],
-
     "question_papers": ["question paper", "question papers", "qp", "questionpaper"],
-    "important_questions": ["important question", "important questions", "important question", "important_question"],
+    "important_questions": ["important question", "important questions", "important question", "important"],
 
-    "question_papers": ["question paper", "question papers", "qp"],
-    "important_questions": ["important question", "important questions", "important"],
 
 ALLOWED_TYPES = {
     "notes": {"extensions": {".pdf"}},
