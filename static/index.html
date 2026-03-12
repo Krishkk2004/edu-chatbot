@@ -31,11 +31,19 @@
     </section>
 
     <section id="chatView" class="chat-layout hidden">
+
+
       <aside id="sidebar" class="sidebar card">
         <div class="sidebar-top">
           <h2>EduChat Bot</h2>
           <button id="toggleSidebarBtn" class="ghost">☰</button>
         </div>
+
+
+
+      <aside class="sidebar card">
+        <h2>EduChat Bot</h2>
+
         <div id="chatSessions" class="chat-sessions"></div>
         <div class="sidebar-footer">
           <small id="userEmail"></small>
@@ -46,6 +54,8 @@
       <section class="chat-main card">
         <header>
           <h2>Ask anything about Anna University</h2>
+
+
         </header>
 
         <div id="chatHistory" class="chat-history"></div>
@@ -54,6 +64,38 @@
           <input id="message" placeholder="Ask your question..." />
           <button id="sendBtn">Send</button>
         </div>
+
+          <p>Notes, Important Questions, Question Papers</p>
+
+        </header>
+
+        <div id="chatHistory" class="chat-history"></div>
+
+        <div class="chat-input-row">
+          <input id="message" placeholder="Ask your question..." />
+          <button id="sendBtn">Send</button>
+        </div>
+
+
+        <hr />
+
+        <h3>Upload Study Material</h3>
+        <form id="uploadForm" class="upload-form">
+          <input name="title" placeholder="Title" required />
+          <input name="subject" placeholder="Subject (e.g. maths-2)" required />
+          <select name="category" id="resourceCategory" required>
+            <option value="notes">Notes (PDF)</option>
+            <option value="important_questions">Important Questions (Image)</option>
+            <option value="question_papers">Question Papers (PDF)</option>
+          </select>
+          <input name="file" id="resourceFile" type="file" required />
+          <button type="submit">Upload</button>
+        </form>
+        <p id="uploadStatus" class="status"></p>
+
+        <h3>Available Materials</h3>
+        <div id="resources"></div>
+ 
       </section>
     </section>
   </main>

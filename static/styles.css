@@ -30,7 +30,15 @@ body {
 
 .auth-view h1 span { color: #1455d9; }
 
+
 input, button {
+
+ codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
+input, button {
+
+input, select, button {
+ codex/create-frontend-and-backend-for-education-ai-chatbot
+
   border-radius: 10px;
   border: 1px solid #d5ddec;
   padding: 10px 12px;
@@ -65,6 +73,7 @@ button.ghost {
   display: flex;
   flex-direction: column;
   max-height: 88vh;
+
   transition: width 0.2s ease;
 }
 
@@ -85,6 +94,7 @@ button.ghost {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+
 }
 
 .chat-sessions {
@@ -116,8 +126,17 @@ button.ghost {
 }
 
 .chat-history {
+
   min-height: 420px;
   max-height: 65vh;
+
+  min-height: 420px;
+  max-height: 65vh;
+
+  min-height: 300px;
+  max-height: 420px;
+ 
+
   overflow-y: auto;
   border: 1px solid #dbe3f3;
   border-radius: 10px;
@@ -149,6 +168,24 @@ button.ghost {
 }
 
 .chat-input-row input { flex: 1; }
+
+
+.upload-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.upload-form button { grid-column: span 2; }
+
+.resource-item {
+  border: 1px solid #e5eaf6;
+  border-radius: 9px;
+  padding: 8px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
 
 @media (max-width: 900px) {
   .chat-layout { grid-template-columns: 1fr; }
