@@ -1,20 +1,34 @@
 #!/usr/bin/env python3
+import cgi
 import json
+import mimetypes
 import os
 import re
 import secrets
 import sqlite3
 from datetime import datetime
-from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
-import cgi
+from urllib.request import Request, urlopen
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(ROOT, "chatbot.db")
 STATIC_DIR = os.path.join(ROOT, "static")
-UPLOAD_DIR = os.path.join(ROOT, "uploads")
+UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
+LEGACY_UPLOAD_DIR = os.path.join(ROOT, "uploads")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(LEGACY_UPLOAD_DIR, exist_ok=True)
+
+
+ALLOWED_TYPES = {
+    "notes": {"extensions": {".pdf"}},
+    "important_questions": {"extensions": {".png", ".jpg", ".jpeg", ".webp"}},
+    "question_papers": {"extensions": {".pdf"}},
+}
+
+MATERIAL_PROMPT = "Which subject do you need?"
 
 
 def get_db():
@@ -45,6 +59,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS resources (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
+            subject TEXT NOT NULL DEFAULT '',
             category TEXT NOT NULL CHECK(category IN ('notes','important_questions','question_papers')),
             file_path TEXT NOT NULL,
             uploaded_by INTEGER,
@@ -62,6 +77,10 @@ def init_db():
         );
         """
     )
+    try:
+        conn.execute("ALTER TABLE resources ADD COLUMN subject TEXT NOT NULL DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
 
@@ -85,6 +104,84 @@ def verify_password(raw: str, stored: str) -> bool:
 
 def now_iso() -> str:
     return datetime.utcnow().isoformat() + "Z"
+
+
+def safe_subject(subject: str) -> str:
+    return re.sub(r"\s+", " ", subject.strip()).lower()
+
+
+def find_file_by_name(filename: str):
+    if not filename:
+        return None
+    for base in [UPLOAD_DIR, LEGACY_UPLOAD_DIR]:
+        direct = os.path.join(base, filename)
+        if os.path.exists(direct):
+            return direct
+        for root, _, files in os.walk(base):
+            if filename in files:
+                return os.path.join(root, filename)
+    return None
+
+
+def generate_openai_reply(user_message: str, history_rows):
+    if not OPENAI_API_KEY:
+        return None
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are educhat bot for Anna University. "
+                "If asked for notes or study materials, ask exactly: Which subject do you need?"
+            ),
+        }
+    ]
+    for row in history_rows[-8:]:
+        messages.append({"role": row["role"], "content": row["message"]})
+    messages.append({"role": "user", "content": user_message})
+
+    payload = {
+        "model": OPENAI_MODEL,
+        "messages": messages,
+        "temperature": 0.4,
+    }
+    req = Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+        },
+        method="POST",
+    )
+    try:
+        with urlopen(req, timeout=25) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"].strip()
+    except Exception:
+        return None
+
+
+def admin_static_file_list():
+    result = []
+    for folder_name, normalized_category in [
+        ("Notes", "notes"),
+        ("Important_Question", "important_questions"),
+        ("Question_Paper", "question_papers"),
+    ]:
+        category_dir = os.path.join(UPLOAD_DIR, folder_name)
+        files = []
+        if os.path.isdir(category_dir):
+            for name in sorted(os.listdir(category_dir)):
+                full = os.path.join(category_dir, name)
+                if os.path.isfile(full):
+                    files.append(name)
+        result.append({
+            "folder": folder_name,
+            "category": normalized_category,
+            "files": files,
+        })
+    return result
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -131,14 +228,7 @@ class Handler(BaseHTTPRequestHandler):
             target = os.path.join(target, "index.html")
         if not os.path.exists(target):
             return False
-        if target.endswith(".html"):
-            ctype = "text/html"
-        elif target.endswith(".css"):
-            ctype = "text/css"
-        elif target.endswith(".js"):
-            ctype = "application/javascript"
-        else:
-            ctype = "application/octet-stream"
+        ctype = mimetypes.guess_type(target)[0] or "application/octet-stream"
         with open(target, "rb") as f:
             data = f.read()
         self.send_response(200)
@@ -150,15 +240,42 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        query = parse_qs(parsed.query)
+
+        if parsed.path == "/api/me":
+            user = self.auth_user()
+            if not user:
+                return self.send_json({"error": "Unauthorized"}, 401)
+            return self.send_json({"user": {"id": user["id"], "name": user["name"], "email": user["email"]}})
+
+        if parsed.path == "/api/admin-static-uploads":
+            return self.send_json({"base_path": "static/uploads", "categories": admin_static_file_list()})
+
         if parsed.path == "/api/resources":
+            resource_type = (query.get("category", [""])[0] or "").strip()
+            subject = safe_subject(query.get("subject", [""])[0] or "")
+
+            sql = "SELECT id,title,subject,category,file_path,created_at FROM resources"
+            where = []
+            params = []
+            if resource_type in ALLOWED_TYPES:
+                where.append("category=?")
+                params.append(resource_type)
+            if subject:
+                where.append("subject=?")
+                params.append(subject)
+            if where:
+                sql += " WHERE " + " AND ".join(where)
+            sql += " ORDER BY created_at DESC"
+
             conn = get_db()
-            rows = conn.execute(
-                "SELECT id,title,category,file_path,created_at FROM resources ORDER BY created_at DESC"
-            ).fetchall()
+            rows = conn.execute(sql, tuple(params)).fetchall()
             conn.close()
-            items = [dict(r) for r in rows]
-            for it in items:
-                it["download_url"] = f"/files/{os.path.basename(it['file_path'])}"
+            items = []
+            for r in rows:
+                item = dict(r)
+                item["download_url"] = f"/files/{os.path.basename(r['file_path'])}"
+                items.append(item)
             return self.send_json({"resources": items})
 
         if parsed.path == "/api/chat-history":
@@ -175,14 +292,15 @@ class Handler(BaseHTTPRequestHandler):
 
         if parsed.path.startswith("/files/"):
             fname = os.path.basename(parsed.path)
-            fpath = os.path.join(UPLOAD_DIR, fname)
-            if not os.path.exists(fpath):
+            fpath = find_file_by_name(fname)
+            if not fpath:
                 self.send_error(404)
                 return
             with open(fpath, "rb") as f:
                 data = f.read()
+            ctype = mimetypes.guess_type(fpath)[0] or "application/octet-stream"
             self.send_response(200)
-            self.send_header("Content-Type", "application/pdf")
+            self.send_header("Content-Type", ctype)
             self.send_header("Content-Disposition", f'attachment; filename="{fname}"')
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
@@ -197,6 +315,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+
         if parsed.path == "/api/signup":
             data = self.parse_json()
             name = data.get("name", "").strip()
@@ -215,7 +334,7 @@ class Handler(BaseHTTPRequestHandler):
                 conn.close()
                 return self.send_json({"error": "Email already exists"}, 409)
             conn.close()
-            return self.send_json({"message": "Signup successful"}, 201)
+            return self.send_json({"message": "Signup successful. Please login."}, 201)
 
         if parsed.path == "/api/login":
             data = self.parse_json()
@@ -237,18 +356,27 @@ class Handler(BaseHTTPRequestHandler):
             if not user:
                 return self.send_json({"error": "Unauthorized"}, 401)
             ctype, pdict = cgi.parse_header(self.headers.get("content-type"))
-            if ctype != "multipart/form-data":
+            if ctype != "multipart/form-data" or "boundary" not in pdict:
                 return self.send_json({"error": "multipart/form-data required"}, 400)
-            pdict["boundary"] = bytes(pdict["boundary"], "utf-8")
-            form = cgi.FieldStorage(fp=self.rfile, headers=self.headers, environ={"REQUEST_METHOD": "POST"}, keep_blank_values=True)
+
+            form = cgi.FieldStorage(
+                fp=self.rfile,
+                headers=self.headers,
+                environ={"REQUEST_METHOD": "POST", "CONTENT_TYPE": self.headers.get("content-type", "")},
+                keep_blank_values=True,
+            )
             title = (form.getfirst("title") or "").strip()
+            subject = safe_subject(form.getfirst("subject") or "")
             category = (form.getfirst("category") or "").strip()
             file_item = form["file"] if "file" in form else None
-            if not title or category not in {"notes", "important_questions", "question_papers"} or file_item is None:
-                return self.send_json({"error": "title, category, and file are required"}, 400)
-            filename = os.path.basename(file_item.filename or "upload.pdf")
-            if not filename.lower().endswith(".pdf"):
-                return self.send_json({"error": "Only PDF files allowed"}, 400)
+            if not title or not subject or category not in ALLOWED_TYPES or file_item is None:
+                return self.send_json({"error": "title, subject, category, and file are required"}, 400)
+
+            filename = os.path.basename(file_item.filename or "upload")
+            ext = os.path.splitext(filename)[1].lower()
+            if ext not in ALLOWED_TYPES[category]["extensions"]:
+                return self.send_json({"error": f"Invalid file type for {category}"}, 400)
+
             safe_name = re.sub(r"[^a-zA-Z0-9_.-]", "_", filename)
             stored_name = f"{int(datetime.utcnow().timestamp())}_{safe_name}"
             path = os.path.join(UPLOAD_DIR, stored_name)
@@ -257,8 +385,8 @@ class Handler(BaseHTTPRequestHandler):
 
             conn = get_db()
             conn.execute(
-                "INSERT INTO resources(title,category,file_path,uploaded_by,created_at) VALUES(?,?,?,?,?)",
-                (title, category, path, user["id"], now_iso()),
+                "INSERT INTO resources(title,subject,category,file_path,uploaded_by,created_at) VALUES(?,?,?,?,?,?)",
+                (title, subject, category, path, user["id"], now_iso()),
             )
             conn.commit()
             conn.close()
@@ -268,23 +396,58 @@ class Handler(BaseHTTPRequestHandler):
             user = self.auth_user()
             if not user:
                 return self.send_json({"error": "Unauthorized"}, 401)
+
             data = self.parse_json()
             message = (data.get("message") or "").strip()
             if not message:
                 return self.send_json({"error": "Message required"}, 400)
+
+            text = message.lower()
+            wants_material = any(word in text for word in ["notes", "important question", "question paper", "qp", "study material", "material"])
+
             conn = get_db()
             conn.execute(
                 "INSERT INTO chat_history(user_id,role,message,created_at) VALUES(?,?,?,?)",
                 (user["id"], "user", message, now_iso()),
             )
-            resource_rows = conn.execute(
-                "SELECT title,category,file_path FROM resources ORDER BY created_at DESC LIMIT 3"
-            ).fetchall()
-            tips = ", ".join([f"{r['title']} ({r['category']})" for r in resource_rows]) or "No resources uploaded yet"
-            response = (
-                "Anna University assistant: I can help with study plans, important questions, and notes. "
-                f"Latest resources: {tips}. Your question was: {message}"
-            )
+
+            previous_assistant = conn.execute(
+                "SELECT message FROM chat_history WHERE user_id=? AND role='assistant' ORDER BY id DESC LIMIT 1",
+                (user["id"],),
+            ).fetchone()
+
+            response = ""
+            if wants_material:
+                response = MATERIAL_PROMPT
+            elif previous_assistant and previous_assistant["message"] == MATERIAL_PROMPT:
+                subject = safe_subject(message)
+                rows = conn.execute(
+                    "SELECT title,category,file_path FROM resources WHERE subject=? ORDER BY created_at DESC",
+                    (subject,),
+                ).fetchall()
+                if rows:
+                    lines = [f"Available materials for {subject}:"]
+                    for r in rows:
+                        category_name = r["category"].replace("_", " ")
+                        url = f"/files/{os.path.basename(r['file_path'])}"
+                        lines.append(f"- {category_name}: {r['title']} -> {url}")
+                    response = "\n".join(lines)
+                else:
+                    response = f"No materials found for {subject}. Please check subject spelling and database entries."
+            else:
+                history_rows = conn.execute(
+                    "SELECT role,message FROM chat_history WHERE user_id=? ORDER BY id ASC",
+                    (user["id"],),
+                ).fetchall()
+                ai_reply = generate_openai_reply(message, history_rows)
+                if ai_reply:
+                    response = ai_reply
+                else:
+                    response = (
+                        "I am educhat bot. Ask me Anna University questions. "
+                        "For notes, important questions, or question papers, I will ask your subject."
+                    )
+
             conn.execute(
                 "INSERT INTO chat_history(user_id,role,message,created_at) VALUES(?,?,?,?)",
                 (user["id"], "assistant", response, now_iso()),
