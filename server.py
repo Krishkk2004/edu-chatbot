@@ -147,36 +147,34 @@ def init_db():
     conn.close()
     
     
-     CREATE TABLE IF NOT EXISTS chat_state (
+    CREATE TABLE IF NOT EXISTS chat_state (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         user_id INTEGER NOT NULL,
         pending_category TEXT,
         updated_at TIMESTAMP  DEFAULT CURRENT_TIMESTAMP NOT NULL,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-     );
-     CREATE TABLE IF NOT EXISTS notes (
+    );
+    CREATE TABLE IF NOT EXISTS notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         subject TEXT NOT NULL,
         title TEXT NOT NULL,
         file_name TEXT NOT NULL,
         created_at TEXT NOT NULL
-     );
-
-     CREATE TABLE IF NOT EXISTS question_papers (
+    );
+    CREATE TABLE IF NOT EXISTS question_papers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         subject TEXT NOT NULL,
         title TEXT NOT NULL,
         file_name TEXT NOT NULL,
         created_at TEXT NOT NULL
-     );
-
-     CREATE TABLE IF NOT EXISTS important_questions (
+    );
+    CREATE TABLE IF NOT EXISTS important_questions (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
        subject TEXT NOT NULL,
        title TEXT NOT NULL,
        file_name TEXT NOT NULL,
        created_at TEXT NOT NULL
-     );
+    );
     
     -- legacy-compatible names requested by some manual workflows
         CREATE TABLE IF NOT EXISTS questionpaper (
