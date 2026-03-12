@@ -145,14 +145,14 @@ def init_db():
         pass
     conn.commit()
     conn.close()
-    
+
     CREATE TABLE IF NOT EXISTS chat_state (
-        user_id INTEGER PRIMARY KEY,
-        pending_category TEXT,
-        updated_at TEXT NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-    );
-    
+    id INTEGER PRIMARY KEY AUTOINCREMENT, -- unique identifier
+    user_id INTEGER NOT NULL,
+    pending_category TEXT,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
     CREATE TABLE IF NOT EXISTS notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         subject TEXT NOT NULL,
