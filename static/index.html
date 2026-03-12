@@ -1,58 +1,80 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Anna University Edu Chatbot</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduChat Bot</title>
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <main class="container">
-    <h1>Anna University AI Chatbot</h1>
-
-    <section class="card" id="authCard">
-      <h2>Login / Signup</h2>
-      <div class="row">
-        <input id="name" placeholder="Name (for signup)" />
-        <input id="email" type="email" placeholder="Email" />
-        <input id="password" type="password" placeholder="Password" />
-      </div>
-      <div class="row">
-        <button onclick="signup()">Signup</button>
-        <button onclick="login()">Login</button>
-      </div>
-      <p id="authStatus"></p>
+  <main class="app-shell">
+    <section id="loginView" class="auth-view card">
+      <h1>Welcome to <span>EduChat Bot</span></h1>
+      <h2>Login</h2>
+      <input id="loginEmail" type="email" placeholder="Email" />
+      <input id="loginPassword" type="password" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <p id="loginStatus" class="status"></p>
+      <p class="switch">Don't have account? <a href="#" id="gotoSignup">Signup</a></p>
     </section>
 
-    <section class="card hidden" id="resourceCard">
-      <h2>Upload PDF Resources</h2>
-      <form id="uploadForm">
-        <input name="title" placeholder="Title" required />
-        <select name="category" required>
-          <option value="notes">Notes</option>
-          <option value="important_questions">Important Questions</option>
-          <option value="question_papers">Question Papers</option>
-        </select>
-        <input name="file" type="file" accept="application/pdf" required />
-        <button type="submit">Upload PDF</button>
-      </form>
-      <p id="uploadStatus"></p>
+    <section id="signupView" class="auth-view card hidden">
+      <h1>Create your account</h1>
+      <h2>Signup</h2>
+      <input id="signupName" placeholder="Name" />
+      <input id="signupEmail" type="email" placeholder="Email" />
+      <input id="signupPassword" type="password" placeholder="Password" />
+      <input id="signupConfirm" type="password" placeholder="Confirm Password" />
+      <button id="signupBtn">Create Account</button>
+      <p id="signupStatus" class="status"></p>
+      <p class="switch">Already have account? <a href="#" id="gotoLogin">Login</a></p>
     </section>
 
-    <section class="card">
-      <h2>Available Study Materials</h2>
-      <div id="resources"></div>
-    </section>
+    <section id="chatView" class="chat-layout hidden">
+      <aside class="sidebar card">
+        <h2>EduChat Bot</h2>
+        <div id="chatSessions" class="chat-sessions"></div>
+        <div class="sidebar-footer">
+          <small id="userEmail"></small>
+          <button id="logoutBtn" class="ghost">Logout</button>
+        </div>
+      </aside>
 
-    <section class="card hidden" id="chatCard">
-      <h2>Chatbot</h2>
-      <div id="chatHistory" class="chat"></div>
-      <div class="row">
-        <input id="message" placeholder="Ask your question..." />
-        <button onclick="sendMessage()">Send</button>
-      </div>
+      <section class="chat-main card">
+        <header>
+          <h2>Ask anything about Anna University</h2>
+          <p>Notes, Important Questions, Question Papers</p>
+        </header>
+
+        <div id="chatHistory" class="chat-history"></div>
+
+        <div class="chat-input-row">
+          <input id="message" placeholder="Ask your question..." />
+          <button id="sendBtn">Send</button>
+        </div>
+
+        <hr />
+
+        <h3>Upload Study Material</h3>
+        <form id="uploadForm" class="upload-form">
+          <input name="title" placeholder="Title" required />
+          <input name="subject" placeholder="Subject (e.g. maths-2)" required />
+          <select name="category" id="resourceCategory" required>
+            <option value="notes">Notes (PDF)</option>
+            <option value="important_questions">Important Questions (Image)</option>
+            <option value="question_papers">Question Papers (PDF)</option>
+          </select>
+          <input name="file" id="resourceFile" type="file" required />
+          <button type="submit">Upload</button>
+        </form>
+        <p id="uploadStatus" class="status"></p>
+
+        <h3>Available Materials</h3>
+        <div id="resources"></div>
+      </section>
     </section>
   </main>
+
   <script src="/static/app.js"></script>
 </body>
 </html>
