@@ -7,6 +7,48 @@ function setStatus(id, msg, good = true) {
   const el = byId(id);
   el.textContent = msg;
   el.style.color = good ? '#1d7d39' : '#c62828';
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+}
+
+function showView(name) {
+  byId('loginView').classList.toggle('hidden', name !== 'login');
+  byId('signupView').classList.toggle('hidden', name !== 'signup');
+  byId('chatView').classList.toggle('hidden', name !== 'chat');
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>'"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
+}
+
+function withLinks(text) {
+  return escapeHtml(text).replace(/(\/files\/[\w.-]+)/g, '<a href="$1" target="_blank">Download</a>');
+}
+
+function renderMsg(role, text) {
+  const wrap = byId('chatHistory');
+  const div = document.createElement('div');
+  div.className = role === 'user' ? 'msg user' : 'msg bot';
+  div.innerHTML = withLinks(text);
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function signup() {
+  const name = byId('signupName').value.trim();
+  const email = byId('signupEmail').value.trim();
+  const password = byId('signupPassword').value;
+  const confirm = byId('signupConfirm').value;
+
+  if (password !== confirm) {
+    setStatus('signupStatus', 'Password and confirm password must match', false);
+    return;
+  }
+
+  const res = await fetch('/api/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password }),
+
 }
 
 
@@ -220,13 +262,17 @@ async function loadResources() {
     root.appendChild(el);
 
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
   });
   const data = await res.json();
   setStatus('signupStatus', data.message || data.error, res.ok);
   if (res.ok) showView('login');
 }
 
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
+
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 async function login() {
   const email = byId('loginEmail').value.trim();
   const password = byId('loginPassword').value;
@@ -288,6 +334,35 @@ async function sendMessage() {
     },
     body: JSON.stringify({ message }),
   });
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+  const data = await res.json();
+  if (res.ok) {
+    await loadHistory();
+  } else {
+    renderMsg('assistant', data.error || 'Unable to send message now.');
+  }
+}
+
+async function bootstrapAuth() {
+  if (!token) {
+    showView('login');
+    return;
+  }
+
+  const res = await fetch('/api/me', { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) {
+    logout();
+    showView('login');
+    return;
+  }
+  const data = await res.json();
+  currentUser = data.user;
+  byId('userEmail').textContent = currentUser.email;
+  showView('chat');
+  await loadHistory();
+}
+
+
   const data = await res.json();
   if (res.ok) {
     await loadHistory();
@@ -354,6 +429,7 @@ async function bootstrapAuth() {
   await loadHistory();
 }
 
+ codex/create-frontend-and-backend-for-education-ai-chatbot
 function logout() {
   localStorage.removeItem('token');
   token = '';
@@ -364,6 +440,8 @@ function logout() {
 function toggleSidebar() {
   byId('sidebar').classList.toggle('collapsed');
 }
+
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
 
 async function uploadResource(e) {
@@ -409,12 +487,18 @@ function logout() {
   currentUser = null;
   showView('login');
 }
+codex/create-frontend-and-backend-for-education-ai-chatbot
 byId('gotoSignup').addEventListener('click', (e) => { e.preventDefault(); showView('signup'); });
 byId('gotoLogin').addEventListener('click', (e) => { e.preventDefault(); showView('login'); });
 byId('signupBtn').addEventListener('click', signup);
 byId('loginBtn').addEventListener('click', login);
 byId('sendBtn').addEventListener('click', sendMessage);
 byId('message').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+byId('logoutBtn').addEventListener('click', logout);
+byId('toggleSidebarBtn').addEventListener('click', toggleSidebar);
+
+
 
 byId('logoutBtn').addEventListener('click', logout);
 byId('toggleSidebarBtn').addEventListener('click', toggleSidebar);
@@ -438,4 +522,5 @@ byId('resourceCategory').addEventListener('change', (e) => {
 
 
 
+codex/create-frontend-and-backend-for-education-ai-chatbot
 bootstrapAuth();
