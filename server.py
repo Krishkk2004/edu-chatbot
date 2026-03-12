@@ -324,6 +324,9 @@ def admin_static_file_list():
                     files.append(name)
         result.append({"folder": folder_name, "category": category, "files": files})
     return result
+   
+    conn.commit()
+    conn.close()
     conn.execute("""
 
         CREATE TABLE IF NOT EXISTS important_questions (
@@ -337,8 +340,7 @@ def admin_static_file_list():
                 )
     
     
-    conn.commit()
-    conn.close()
+   
 
 
 
