@@ -19,24 +19,21 @@ LEGACY_UPLOAD_DIR = os.path.join(ROOT, "uploads")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 MATERIAL_PROMPT = "Which subject do you need?"
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
-
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
 UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
 LEGACY_UPLOAD_DIR = os.path.join(ROOT, "uploads")
 
 UPLOAD_DIR = os.path.join(ROOT, "uploads")
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(LEGACY_UPLOAD_DIR, exist_ok=True)
 
 
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 CATEGORY_TABLES = {
     "notes": "notes",
     "question_papers": "question_papers",
@@ -49,13 +46,13 @@ CATEGORY_TABLES = {
     "notes": "notes",
     "question_papers": "question_papers",
     "important_questions": "important_questions",
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
 }
 
 
 KEYWORDS = {
     "notes": ["note", "notes"],
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
     "question_papers": ["question paper", "question papers", "qp", "questionpaper"],
     "important_questions": ["important question", "important questions", "important question", "important_question"],
 
@@ -76,7 +73,6 @@ ALLOWED_TYPES = {
     "important_questions": {"extensions": {".png", ".jpg", ".jpeg", ".webp"}},
     "question_papers": {"extensions": {".pdf"}},
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
 }
 
 
@@ -166,7 +162,7 @@ def init_db():
         pass
     conn.commit()
     conn.close()
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
 
         CREATE TABLE IF NOT EXISTS chat_state (
             user_id INTEGER PRIMARY KEY,
@@ -175,7 +171,7 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         );
 
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
         CREATE TABLE IF NOT EXISTS notes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             subject TEXT NOT NULL,
@@ -219,14 +215,12 @@ def init_db():
         );
 
         CREATE TABLE IF NOT EXISTS notes (
- codex/create-frontend-and-backend-for-education-ai-chatbot
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             subject TEXT NOT NULL,
             title TEXT NOT NULL,
             file_name TEXT NOT NULL,
             created_at TEXT NOT NULL
         );
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
         """
     )
     conn.commit()
@@ -361,7 +355,7 @@ def admin_static_file_list():
     )
     conn.commit()
     conn.close()
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
 
 
 def infer_category(text: str):
@@ -458,8 +452,6 @@ def admin_static_file_list():
 def safe_subject(subject: str) -> str:
     return re.sub(r"\s+", " ", subject.strip()).lower()
 
-
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
 def find_file_by_name(filename: str):
     if not filename:
         return None
@@ -474,7 +466,6 @@ def find_file_by_name(filename: str):
 
 
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
 def generate_openai_reply(user_message: str, history_rows):
     if not OPENAI_API_KEY:
         return None
@@ -482,14 +473,14 @@ def generate_openai_reply(user_message: str, history_rows):
     messages = [
         {
             "role": "system",
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
+ 
             "content": (
                 "You are educhat bot for Anna University. "
                 "If asked for notes or study materials, ask exactly: Which subject do you need?"
             ),
 
             "content": "You are EduChat Bot for Anna University students. Keep responses concise and practical.",
- codex/create-frontend-and-backend-for-education-ai-chatbot
+ 
         }
     ]
     for row in history_rows[-8:]:
@@ -518,7 +509,7 @@ def generate_openai_reply(user_message: str, history_rows):
         return None
 
 
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
+
 def admin_static_file_list():
     result = []
     for folder_name, normalized_category in [
@@ -541,8 +532,6 @@ def admin_static_file_list():
     return result
 
 
-
- codex/create-frontend-and-backend-for-education-ai-chatbot
 class Handler(BaseHTTPRequestHandler):
     def end_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -607,10 +596,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({"error": "Unauthorized"}, 401)
             return self.send_json({"user": {"id": user["id"], "name": user["name"], "email": user["email"]}})
 
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
-
- codex/create-frontend-and-backend-for-education-ai-chatbot
         if parsed.path == "/api/admin-static-uploads":
             return self.send_json({"base_path": "static/uploads", "categories": admin_static_file_list()})
 
@@ -659,15 +645,8 @@ class Handler(BaseHTTPRequestHandler):
             conn.close()
             all_items.sort(key=lambda x: x["created_at"], reverse=True)
             return self.send_json({"resources": all_items})
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
-
-
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
         if parsed.path == "/api/admin-static-uploads":
             return self.send_json({"base_path": "static/uploads", "categories": admin_static_file_list()})
-
-
- codex/create-frontend-and-backend-for-education-ai-chatbot
         if parsed.path == "/api/resources":
             resource_type = (query.get("category", [""])[0] or "").strip()
             subject = safe_subject(query.get("subject", [""])[0] or "")
@@ -694,7 +673,6 @@ class Handler(BaseHTTPRequestHandler):
                 item["download_url"] = f"/files/{os.path.basename(r['file_path'])}"
                 items.append(item)
             return self.send_json({"resources": items})
- codex/create-frontend-and-backend-for-education-ai-chatbot
 
         if parsed.path == "/api/chat-history":
             user = self.auth_user()
@@ -769,9 +747,6 @@ class Handler(BaseHTTPRequestHandler):
             conn.close()
             return self.send_json({"token": token, "user": {"id": row["id"], "name": row["name"], "email": row["email"]}})
 
-codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
-
-
         if parsed.path == "/api/upload-resource":
             user = self.auth_user()
             if not user:
@@ -814,18 +789,18 @@ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
             conn = get_db()
             conn.execute(
                 "INSERT INTO resources(title,subject,category,file_path,uploaded_by,created_at) VALUES(?,?,?,?,?,?)",
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
+
                 (title, subject, category, path, user["id"], now_iso()),
 
                 (title, subject, category, flat_path, user["id"], now_iso()),
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
             )
             conn.commit()
             conn.close()
             return self.send_json({"message": "Resource uploaded"}, 201)
 
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
         if parsed.path == "/api/chat":
             user = self.auth_user()
             if not user:
@@ -836,27 +811,20 @@ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
             if not message:
                 return self.send_json({"error": "Message required"}, 400)
 
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
 
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
             text = message.lower()
             wants_material = any(word in text for word in ["notes", "important question", "question paper", "qp", "study material", "material"])
 
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
             conn = get_db()
             conn.execute(
                 "INSERT INTO chat_history(user_id,role,message,created_at) VALUES(?,?,?,?)",
                 (user["id"], "user", message, now_iso()),
             )
 
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
-
- codex/create-frontend-and-backend-for-education-ai-chatbot
             category = infer_category(message)
             pending = conn.execute("SELECT pending_category FROM chat_state WHERE user_id=?", (user["id"],)).fetchone()
 
@@ -892,10 +860,8 @@ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
                 else:
                     response = f"No {pending_category.replace('_', ' ')} found for {subject}."
                 conn.execute("DELETE FROM chat_state WHERE user_id=?", (user["id"],))
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
 
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
             previous_assistant = conn.execute(
                 "SELECT message FROM chat_history WHERE user_id=? AND role='assistant' ORDER BY id DESC LIMIT 1",
                 (user["id"],),
@@ -953,41 +919,39 @@ codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
                     response = "\n".join(lines)
                 else:
                     response = f"I couldn't find {requested_category.replace('_', ' ')} for {matched_subject}."
- codex/create-frontend-and-backend-for-education-ai-chatbot
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
             else:
                 history_rows = conn.execute(
                     "SELECT role,message FROM chat_history WHERE user_id=? ORDER BY id ASC",
                     (user["id"],),
                 ).fetchall()
                 ai_reply = generate_openai_reply(message, history_rows)
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
                 response = ai_reply or (
                     "I am educhat bot. Ask me Anna University questions. "
                     "If you need notes, question papers, or important questions, I will ask your subject."
                 )
 
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+ 
 
                 if ai_reply:
                     response = ai_reply
                 else:
                     response = (
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
+
                         "I am educhat bot. Ask me Anna University questions. "
                         "For notes, important questions, or question papers, I will ask your subject."
 
                         "I am EduChat Bot 🤖. I can help with Anna University study guidance and provide notes, "
                         "important questions, and question papers by subject. Ask like: 'Give notes for data structures'."
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
                     )
 
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
             conn.execute(
                 "INSERT INTO chat_history(user_id,role,message,created_at) VALUES(?,?,?,?)",
                 (user["id"], "assistant", response, now_iso()),
