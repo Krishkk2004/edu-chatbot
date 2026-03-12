@@ -1,0 +1,41 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: #f3f6fc; color: #13233a; }
+.app { min-height: 100vh; }
+.hidden { display: none !important; }
+
+.auth-wrap { max-width: 420px; margin: 60px auto; padding: 0 16px; }
+.auth-wrap h1 { text-align: center; margin-bottom: 16px; }
+.panel { background: #fff; border: 1px solid #dce3ef; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.muted { font-size: 14px; color: #5b6b85; }
+.status { min-height: 20px; font-size: 14px; margin: 0; }
+
+input, select, button { border-radius: 8px; border: 1px solid #ccd5e6; padding: 10px; font-size: 14px; }
+button { background: #206be4; color: #fff; border: none; cursor: pointer; }
+button:hover { background: #1759c2; }
+a { color: #206be4; text-decoration: none; }
+
+.chat-layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+.sidebar { background: #0f1729; color: #fff; padding: 16px; display: flex; flex-direction: column; }
+.sidebar h2 { margin-top: 0; }
+.history-list { flex: 1; overflow-y: auto; border: 1px solid #2c3a59; border-radius: 8px; padding: 8px; }
+.history-item { padding: 8px; border-bottom: 1px solid #253552; font-size: 13px; }
+.user-email { margin-top: 12px; padding-top: 12px; border-top: 1px solid #2c3a59; font-size: 14px; color: #bdd0ff; }
+
+.main-chat { padding: 16px; display: grid; gap: 12px; }
+.main-chat h2, .main-chat h3 { margin: 0; }
+.upload-card, .resources-card, .chat-card { background: #fff; border: 1px solid #dce3ef; border-radius: 12px; padding: 12px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.row input, .row select { flex: 1; min-width: 140px; }
+.resource-item { padding: 8px 0; border-bottom: 1px solid #edf1f8; font-size: 14px; }
+.chat-messages { min-height: 260px; max-height: 360px; overflow-y: auto; border: 1px solid #e5ebf7; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+.msg { max-width: 80%; margin: 8px 0; padding: 8px 10px; border-radius: 10px; white-space: pre-line; }
+.msg.user { margin-left: auto; background: #e7f0ff; }
+.msg.bot { margin-right: auto; background: #edf9e9; }
+
+@media (max-width: 900px) {
+  .chat-layout { grid-template-columns: 1fr; }
+  .sidebar { min-height: 220px; }
+}
+
+small { color: #5b6b85; }
+.resources-card button { margin: 8px 0; }

@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>educhat bot</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <main class="app">
+    <section id="authPage" class="auth-wrap">
+      <h1>educhat bot</h1>
+
+      <div id="loginPanel" class="panel">
+        <h2>Login</h2>
+        <input id="loginEmail" type="email" placeholder="Email" />
+        <input id="loginPassword" type="password" placeholder="Password" />
+        <button id="loginBtn">Login</button>
+        <p class="muted">New user? <a href="#" id="showSignup">Signup</a></p>
+        <p id="loginStatus" class="status"></p>
+      </div>
+
+      <div id="signupPanel" class="panel hidden">
+        <h2>Signup</h2>
+        <input id="signupName" placeholder="Name" />
+        <input id="signupEmail" type="email" placeholder="Email" />
+        <input id="signupPassword" type="password" placeholder="Password" />
+        <input id="signupConfirm" type="password" placeholder="Confirm password" />
+        <button id="signupBtn">Create Account</button>
+        <p class="muted">Already have account? <a href="#" id="showLogin">Login</a></p>
+        <p id="signupStatus" class="status"></p>
+      </div>
+    </section>
+
+    <section id="chatPage" class="hidden chat-layout">
+      <aside class="sidebar">
+        <h2>History</h2>
+        <div id="historyList" class="history-list"></div>
+        <div class="user-email" id="userEmail"></div>
+      </aside>
+
+      <section class="main-chat">
+        <header>
+          <h2>educhat bot</h2>
+        </header>
+
+        <section class="upload-card">
+          <h3>Upload Study PDFs</h3>
+          <form id="uploadForm" class="row">
+            <input name="title" placeholder="Title" required />
+            <input name="subject" placeholder="Subject (e.g., DBMS)" required />
+            <select name="category" required>
+              <option value="notes">Notes</option>
+              <option value="important_questions">Important Questions</option>
+              <option value="question_papers">Question Papers</option>
+            </select>
+            <input name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
+            <small>Notes/Question papers: PDF. Important questions: PDF or image.</small>
+            <button type="submit">Upload</button>
+          </form>
+          <p id="uploadStatus" class="status"></p>
+        </section>
+
+        <section class="resources-card">
+          <h3>Stored Resources</h3>
+          <button id="syncBtn" type="button">Sync Manual Uploads</button>
+          <div id="resources"></div>
+        </section>
+
+        <section class="chat-card">
+          <div id="chatMessages" class="chat-messages"></div>
+          <div class="row">
+            <input id="chatInput" placeholder="Ask e.g., Give me notes for DBMS" />
+            <button id="sendBtn">Send</button>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
