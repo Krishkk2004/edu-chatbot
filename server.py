@@ -206,6 +206,7 @@ def init_db():
     )
     conn.commit()
     conn.close()
+    conn.execute("""
     
     CREATE TABLE IF NOT EXISTS question_papers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -214,6 +215,8 @@ def init_db():
             file_name TEXT NOT NULL,
             created_at TEXT NOT NULL
         );
+        """
+                )
 
 def infer_category(text: str):
     t = text.lower()
@@ -321,6 +324,7 @@ def admin_static_file_list():
                     files.append(name)
         result.append({"folder": folder_name, "category": category, "files": files})
     return result
+    conn.execute("""
 
         CREATE TABLE IF NOT EXISTS important_questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -329,6 +333,8 @@ def admin_static_file_list():
             file_name TEXT NOT NULL,
             created_at TEXT NOT NULL
         );
+        """
+                )
     
     
     conn.commit()
