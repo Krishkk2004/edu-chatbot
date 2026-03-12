@@ -59,7 +59,6 @@ ALLOWED_TYPES = {
 
 MATERIAL_PROMPT = "Which subject do you need?"
 
-}
 
 
 def get_db():
