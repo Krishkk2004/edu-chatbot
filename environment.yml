@@ -1,0 +1,10 @@
+name: edu-chatbot
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - flask
+      - pytest
+      - flake8
