@@ -325,8 +325,7 @@ def admin_static_file_list():
         result.append({"folder": folder_name, "category": category, "files": files})
     return result
    
-    conn.commit()
-    conn.close()
+    conn = sqlite3.connect("database.db")
     conn.execute("""
 
         CREATE TABLE IF NOT EXISTS important_questions (
@@ -338,11 +337,11 @@ def admin_static_file_list():
         );
         """
                 )
+    conn.commit()
+    conn.close()
     
     
    
-
-
 
 def infer_category(text: str):
     t = text.lower()
