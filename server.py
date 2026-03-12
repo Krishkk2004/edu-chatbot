@@ -49,7 +49,7 @@ KEYWORDS = {
     "notes": ["note", "notes"],
     "question_papers": ["question paper", "question papers", "qp", "questionpaper"],
     "important_questions": ["important question", "important questions", "important"],
-
+}
 
 ALLOWED_TYPES = {
     "notes": {"extensions": {".pdf"}},
