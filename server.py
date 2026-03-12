@@ -48,7 +48,7 @@ CATEGORY_TABLES = {
 KEYWORDS = {
     "notes": ["note", "notes"],
     "question_papers": ["question paper", "question papers", "qp", "questionpaper"],
-    "important_questions": ["important question", "important questions", "important question", "important"],
+    "important_questions": ["important question", "important questions", "important"],
 
 
 ALLOWED_TYPES = {
@@ -58,12 +58,6 @@ ALLOWED_TYPES = {
 }
 
 MATERIAL_PROMPT = "Which subject do you need?"
-
-
-ALLOWED_TYPES = {
-    "notes": {"extensions": {".pdf"}},
-    "important_questions": {"extensions": {".png", ".jpg", ".jpeg", ".webp"}},
-    "question_papers": {"extensions": {".pdf"}},
 
 }
 
@@ -118,7 +112,7 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         );
 
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
+
 
 
 
@@ -134,7 +128,6 @@ def init_db():
         );
 
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
         CREATE TABLE IF NOT EXISTS chat_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -143,7 +136,6 @@ def init_db():
             created_at TEXT NOT NULL,
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         );
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 
 
         """
@@ -218,7 +210,7 @@ def init_db():
     conn.commit()
     conn.close()
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
+
 
         CREATE TABLE IF NOT EXISTS question_papers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -228,7 +220,6 @@ def init_db():
             created_at TEXT NOT NULL
         );
 
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
 def infer_category(text: str):
     t = text.lower()
     for category, words in KEYWORDS.items():
