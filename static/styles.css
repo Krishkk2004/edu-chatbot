@@ -30,11 +30,15 @@ body {
 
 .auth-view h1 span { color: #1455d9; }
 
+
+input, button {
+
  codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
 input, button {
 
 input, select, button {
  codex/create-frontend-and-backend-for-education-ai-chatbot
+
   border-radius: 10px;
   border: 1px solid #d5ddec;
   padding: 10px 12px;
@@ -69,7 +73,7 @@ button.ghost {
   display: flex;
   flex-direction: column;
   max-height: 88vh;
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
+
   transition: width 0.2s ease;
 }
 
@@ -91,7 +95,6 @@ button.ghost {
   justify-content: space-between;
   gap: 8px;
 
- codex/create-frontend-and-backend-for-education-ai-chatbot
 }
 
 .chat-sessions {
@@ -123,13 +126,17 @@ button.ghost {
 }
 
 .chat-history {
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
+
+  min-height: 420px;
+  max-height: 65vh;
+
   min-height: 420px;
   max-height: 65vh;
 
   min-height: 300px;
   max-height: 420px;
- codex/create-frontend-and-backend-for-education-ai-chatbot
+ 
+
   overflow-y: auto;
   border: 1px solid #dbe3f3;
   border-radius: 10px;
@@ -162,7 +169,6 @@ button.ghost {
 
 .chat-input-row input { flex: 1; }
 
- codex/develop-frontend-and-backend-for-edu-chat-0kpdwv
 
 .upload-form {
   display: grid;
@@ -180,7 +186,7 @@ button.ghost {
   font-size: 14px;
 }
 
-codex/create-frontend-and-backend-for-education-ai-chatbot
+
 @media (max-width: 900px) {
   .chat-layout { grid-template-columns: 1fr; }
   .sidebar { max-height: none; }
