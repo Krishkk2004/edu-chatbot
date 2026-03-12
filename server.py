@@ -145,13 +145,13 @@ def init_db():
         pass
     conn.commit()
     conn.close()
-    (
+    
     
      CREATE TABLE IF NOT EXISTS chat_state (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         user_id INTEGER NOT NULL,
         pending_category TEXT,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP  DEFAULT CURRENT_TIMESTAMP NOT NULL,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
      );
      CREATE TABLE IF NOT EXISTS notes (
@@ -177,8 +177,7 @@ def init_db():
        file_name TEXT NOT NULL,
        created_at TEXT NOT NULL
      );
-    )
-    (
+    
     -- legacy-compatible names requested by some manual workflows
         CREATE TABLE IF NOT EXISTS questionpaper (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
