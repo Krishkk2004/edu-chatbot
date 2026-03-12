@@ -14,10 +14,6 @@ from urllib.request import Request, urlopen
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(ROOT, "chatbot.db")
 STATIC_DIR = os.path.join(ROOT, "static")
- codex/develop-frontend-and-backend-for-edu-chat-fvhu0d
-
-
- codex/create-frontend-and-backend-for-education-ai-chatbot
 UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
 LEGACY_UPLOAD_DIR = os.path.join(ROOT, "uploads")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
