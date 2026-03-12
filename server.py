@@ -329,8 +329,8 @@ def admin_static_file_list():
             file_name TEXT NOT NULL,
             created_at TEXT NOT NULL
         );
-        """
-    )
+    
+    
     conn.commit()
     conn.close()
 
