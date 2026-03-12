@@ -151,7 +151,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         user_id INTEGER NOT NULL,
         pending_category TEXT,
-        updated_at TIMESTAMP  DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        updated_at DATETIME  DEFAULT CURRENT_TIMESTAMP NOT NULL,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS notes (
